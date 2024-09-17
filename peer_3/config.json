@@ -1,5 +1,8 @@
 {
     "username":"peer 3",
     "status":"off",
-    "files":["file1.txt","file2.txt","file3.txt"]
+    "files":["file1.txt","file2.txt","file3.txt"],
+    "ip":"127.0.0.1",
+    "port":"50003",
+    "folder":"myFiles"
 }

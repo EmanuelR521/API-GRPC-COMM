@@ -17,7 +17,7 @@ def login():
         if username in peers:
             response = jsonify({"message": f"User {username} already logged."}), 200
         else:    
-            response = jsonify({"message": f"User {username} registrado con éxito."}), 200
+            response = jsonify({"message": f"User {username} logged in."}), 200
             peers.append(username)
             print(peers)
     else:
@@ -82,7 +82,7 @@ def search():
 
     # Buscar el archivo en filesDB.json
     peers_with_file = [peer for peer, data in files_db.items() if file_name in data.get('files', [])]
-    if peers_with_file[0] == "peer1": #VALOR QUEMADO, DEBEMOS CONTROLAR ESTO
+    if peers_with_file[0] == "peer1":
         with open('filesDB.json', 'r') as file:
             files_db = json.load(file)
             
