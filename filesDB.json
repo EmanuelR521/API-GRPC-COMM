@@ -1,12 +1,28 @@
 {
     "peer2": {
         "files": [
-            "file3.txt"
+            "file1.txt",
+            "file2.txt"
         ]
     },
     "peer1": {
         "files": [
             "file1.txt"
+        ]
+    },
+    "peer3": {
+        "files": [
+            "file1.txt",
+            "file2.txt",
+            "file3.txt"
+        ]
+    },
+    "peer4": {
+        "files": [
+            "file1.txt",
+            "file2.txt",
+            "file3.txt",
+            "file4.txt"
         ]
     }
 }

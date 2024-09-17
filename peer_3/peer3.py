@@ -1,86 +1,100 @@
-# Librerias a importar
-import argparse
 import requests
 import json
 import os
 
-# Variable global
-username = 'peer3'
-
 class Peer3:
     def __init__(self, base_url):
         self.base_url = base_url
+        self.last_result = None  # Variable para almacenar el último resultado
         print(self.base_url)
 
     def login(self, username, password):
         url = f"{self.base_url}/login"
         data = {"username": username, "password": password}
-        response = requests.post(url, json=data) # Falta modificar el status del peer en el arc config.json
-        return response.json()
+        response = requests.post(url, json=data)
+        self.last_result = response.json()  # Guardar el resultado en una variable
+        return self.last_result
 
     def logout(self):
         url = f"{self.base_url}/logout"
-        data = {"username":"peer3"}
-        response = requests.post(url,json=data)
-        return response.json()
+        data = {"username": "peer3"}
+        response = requests.post(url, json=data)
+        self.last_result = response.json()  # Guardar el resultado
+        return self.last_result
 
     def search(self, file_name):
         url = f"{self.base_url}/search"
-        params = {"file": file_name}  # Usar 'file' como clave en los parámetros
+        params = {"file": file_name}
         response = requests.get(url, params=params)
-        return response.json()
+        self.last_result = response.json()  # Guardar el resultado
+        return self.last_result
     
     def index(self):
         url = f"{self.base_url}/index"
         try:
-            
             path = os.path.abspath("peer_3//config.json")
             with open(path, 'r') as file:
                 data = json.load(file)
-                # Extraer la lista de archivos del campo 'files'
                 files = data.get('files', [])
-                print(files)
-        
+                print(f"Archivos encontrados en config.json: {files}")
         except FileNotFoundError:
             print("El archivo config.json no se encuentra.")
             return None
-        
         except json.JSONDecodeError:
             print("Error al decodificar el archivo config.json.")
             return None
-        
-        #files = arc.get('files',[])
-        # Enviar los archivos a la API
-        response = requests.post(url, json={'peer3': {'files':files}})
-        return response.json()
+
+        response = requests.post(url, json={'peer3': {'files': files}})
+        self.last_result = response.json()  # Guardar el resultado
+        return self.last_result
+
+
+def main_menu(peer):
+    while True:
+        print("\n--- Menú de Peer3 ---")
+        print("1. Login")
+        print("2. Logout")
+        print("3. Indexar Archivos")
+        print("4. Buscar Archivos")
+        print("5. Ver último resultado")
+        print("6. Salir")
+
+        choice = input("Selecciona una opción: ")
+
+        if choice == '1':
+            username = input("Ingrese el nombre de usuario: ")
+            password = input("Ingrese la contraseña: ")
+            result = peer.login(username, password)
+            print(f"Resultado del login: {result}")
+
+        elif choice == '2':
+            result = peer.logout()
+            print(f"Resultado del logout: {result}")
+
+        elif choice == '3':
+            result = peer.index()
+            print(f"Resultado de la indexación: {result}")
+
+        elif choice == '4':
+            file_name = input("Ingrese el nombre del archivo a buscar: ")
+            result = peer.search(file_name)
+            print(f"Resultado de la búsqueda: {result}")
+
+        elif choice == '5':
+            if peer.last_result:
+                print(f"Último resultado: {peer.last_result}")
+            else:
+                print("No se ha ejecutado ninguna operación aún.")
+
+        elif choice == '6':
+            print("Saliendo del programa...")
+            break
+
+        else:
+            print("Opción no válida. Por favor, intente de nuevo.")
+
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Command line client for peer3 API operations')
-    parser.add_argument('operation', help='Operation to perform', choices=['login', 'logout', 'search', 'index'])
-    parser.add_argument('--username', help='Username for login')
-    parser.add_argument('--password', help='Password for login')
-    parser.add_argument('--file_name', help='Search file')
-    parser.add_argument('--base_url', default='http://127.0.0.1:6970', help='Base URL of the API')
-
-    args = parser.parse_args()
-
-    peer = Peer3(args.base_url)
-    print(peer.base_url)
-    
-    if args.operation == 'login':
-        if not all([args.username, args.password]):
-            print("Username and password are required for login")
-        else:
-            print(peer.login(args.username, args.password))
-            
-    elif args.operation == 'logout':
-        print(peer.logout())
-        
-    elif args.operation == 'search':
-        if not args.file_name:
-            print("File name is required for search")
-        else:
-            print(peer.search(args.file_name))
-            
-    elif args.operation == 'index':
-        print(peer.index())    
+    base_url = 'http://127.0.0.1:6970'
+    peer = Peer3(base_url)
+    main_menu(peer)
