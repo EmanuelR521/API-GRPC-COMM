@@ -24,6 +24,7 @@ def login():
         response = jsonify({"message": f"No ingresó alguno de los datos"}), 402
     return response
 
+# Endpoint para que un peer haga logout
 @api.route('/logout', methods=['POST'])
 def logout():
     data = request.get_json()
@@ -42,6 +43,7 @@ def logout():
     return response
 
 # Endpoint para que un peer indexe sus archivos
+# AGREGAR CONTROL DE ERRORES EN CASO DE NO SUBIR UN JSON
 @api.route('/index', methods=['POST'])
 def index_files():
     data = request.get_json()
@@ -59,7 +61,7 @@ def index_files():
     response = data
     return response
 
-
+# Endpoint para que un peer busque un archivo
 @api.route('/search', methods=['GET'])
 def search():
     file_name = request.args.get('file')
@@ -71,19 +73,22 @@ def search():
     try:
         with open('filesDB.json', 'r') as file:
             files_db = json.load(file)
+    
     except FileNotFoundError:
         return jsonify({"error": "El archivo filesDB.json no se encuentra."}), 404
+    
     except json.JSONDecodeError:
         return jsonify({"error": "Error al decodificar el archivo filesDB.json."}), 400
 
     # Buscar el archivo en filesDB.json
     peers_with_file = [peer for peer, data in files_db.items() if file_name in data.get('files', [])]
-    if peers_with_file[0] == "peer1":
+    if peers_with_file[0] == "peer1": #VALOR QUEMADO, DEBEMOS CONTROLAR ESTO
         with open('filesDB.json', 'r') as file:
             files_db = json.load(file)
             
     if peers_with_file:
         return jsonify({"peers_with_file": peers_with_file}), 200
+    
     return jsonify({"message": "Archivo no encontrado en los peers."}), 404
 
 if __name__ == '__main__':
