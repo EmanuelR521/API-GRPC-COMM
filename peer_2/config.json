@@ -1,5 +1,5 @@
 {
     "username":"peer 2",
     "status":"off",
-    "files":["file1.txt"]
+    "files":["file1.txt", "file2.txt"]
 }
