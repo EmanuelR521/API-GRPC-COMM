@@ -1,0 +1,19 @@
+{
+    "peer2": {
+        "files": [
+            "file1.txt",
+            "file2.txt"
+        ],
+        "ip": "127.0.0.1",
+        "port": "50002",
+        "folder": "myFiles"
+    },
+    "peer1": {
+        "files": [
+            "file1.txt"
+        ],
+        "ip": "127.0.0.1",
+        "port": "50001",
+        "folder": "myFiles"
+    }
+}

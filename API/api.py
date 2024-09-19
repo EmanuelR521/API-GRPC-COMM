@@ -47,19 +47,34 @@ def logout():
 @api.route('/index', methods=['POST'])
 def index_files():
     data = request.get_json()
-    with open('filesDB.json', 'r') as file:
-        files_db = json.load(file)
+    peer_name = list(data.keys())[0]
+    peer_info = data[peer_name]
 
-        # Actualizar el contenido con los datos recibidos
-    files_db.update(data)
+    # Verificar si se enviaron los campos necesarios
+    if 'files' not in peer_info or 'ip' not in peer_info or 'port' not in peer_info or 'folder' not in peer_info:
+        return jsonify({"status": "error", "message": "Faltan datos necesarios"}), 400
 
-        # Guardar los cambios en filesDB.json
-    with open('filesDB.json', 'w') as file:
+    try:
+        # Leer el archivo filesDB.json
+        with open('API//filesDB.json', 'r') as file:
+            files_db = json.load(file)
+    except FileNotFoundError:
+        files_db = {}
+
+    # Actualizar el contenido con los datos recibidos
+    files_db[peer_name] = {
+        "files": peer_info['files'],
+        "ip": peer_info['ip'],
+        "port": peer_info['port'],
+        "folder": peer_info['folder']
+    }
+
+    # Guardar los cambios en filesDB.json
+    with open('Api//filesDB.json', 'w') as file:
         json.dump(files_db, file, indent=4)
 
-        return jsonify({"status": "success"}), 200
-    response = data
-    return response
+    return jsonify({"status": "success"}), 200
+
 
 # Endpoint para que un peer busque un archivo
 @api.route('/search', methods=['GET'])
@@ -71,7 +86,7 @@ def search():
 
     # Leer el archivo filesDB.json
     try:
-        with open('filesDB.json', 'r') as file:
+        with open('API//filesDB.json', 'r') as file:
             files_db = json.load(file)
     
     except FileNotFoundError:
@@ -80,16 +95,25 @@ def search():
     except json.JSONDecodeError:
         return jsonify({"error": "Error al decodificar el archivo filesDB.json."}), 400
 
-    # Buscar el archivo en filesDB.json
-    peers_with_file = [peer for peer, data in files_db.items() if file_name in data.get('files', [])]
-    if peers_with_file[0] == "peer1":
-        with open('filesDB.json', 'r') as file:
-            files_db = json.load(file)
-            
+    # Buscar el archivo en filesDB.json y obtener información adicional
+    peers_with_file = []
+    for peer, data in files_db.items():
+        if file_name in data.get('files', []):
+            # Incluir el IP, puerto y carpeta del peer en la respuesta
+            peer_info = {
+                "peer": peer,
+                "ip": data.get('ip', 'No IP'),
+                "port": data.get('port', 'No Port'),
+                "folder": data.get('folder', 'No Folder')
+            }
+            peers_with_file.append(peer_info)
+
+    # Si se encuentran peers con el archivo, devolver la información
     if peers_with_file:
         return jsonify({"peers_with_file": peers_with_file}), 200
-    
+
     return jsonify({"message": "Archivo no encontrado en los peers."}), 404
+
 
 if __name__ == '__main__':
     api.run(debug=True, host='0.0.0.0', port=6970)
