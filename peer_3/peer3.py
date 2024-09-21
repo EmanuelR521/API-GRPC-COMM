@@ -46,14 +46,13 @@ class Peer3:
         self.last_result = response.json()
         for peer in self.last_result['peers_with_file']:
             self.peersWithFile.append(peer['peer'])
-        print(self.peersWithFile)  # Guardar el resultado
+        print(self.peersWithFile)  # Imprimir el resultado
         return self.last_result  # Guardar el resultado
        
     
     def index(self):
         url = f"{self.api_url}/index"
         try:
-
             with open('peer_3//config.json', 'r') as file:
                 data = json.load(file)
                 files = data.get('files', [])
@@ -83,10 +82,17 @@ class Peer3:
         return self.last_result
 
     def download(self, peer_ip,peer_port, file_name):
+        # Verifica si el archivo ya existe en el peer
+        if file_name in self.peerConfig['files']:
+            print(f"El archivo {file_name} ya se encuentra en el peer")
+            return -1        
+        
+        # Verificar el login
         url=f"{self.api_url}/verifyLogin"
         response = requests.post(url,headers={'username':self.username})
         if response.status_code  != 200:
             return 'You must be logged in'
+        
         # Crear un canal gRPC hacia el otro peer
         channel = grpc.insecure_channel(f'{peer_ip}:{peer_port}')
         stub = FileSharing_pb2_grpc.FileServiceStub(channel)
@@ -97,7 +103,13 @@ class Peer3:
         # Realizar la llamada al servidor gRPC del otro peer
         try:
             response = stub.DownloadFile(request)
+            # Actualizar el config.json agregando al nuevo archivo
+            if response:
+                with open('peer_3//config.json', 'w') as file:
+                    self.peerConfig['files'].append(file_name)
+                    json.dump(self.peerConfig, file, indent=4)            
             print(f"Nombre del archivo recibido: {response.file_content}")
+        
         except grpc.RpcError as e:
             print(f"Error al descargar el archivo: {e}")
 
@@ -142,7 +154,9 @@ def main_menu(peer):
                 peerToDownload = peersD[0]              
                 peer_ip = peerToDownload['ip']
                 peer_port = peerToDownload['port']
-                peer.download(peer_ip,peer_port, file_name)
+                response = peer.download(peer_ip, peer_port, file_name)
+                if response == -1:
+                    break
                 print(f"archivo descargado desde {peerToDownload['peer']}")
             else:
                 print("No se encontraron peers con el archivo.")
