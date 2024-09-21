@@ -1,8 +1,7 @@
-import grpc
+import sys,os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'GRPC')))
+import grpc,FileSharing_pb2,FileSharing_pb2_grpc,time
 from concurrent import futures
-import time
-from GRPC import FileSharing_pb2
-from GRPC import FileSharing_pb2_grpc
 
 class FileService(FileSharing_pb2_grpc.FileServiceServicer):
     def DownloadFile(self, request, context):
@@ -17,7 +16,7 @@ def serve():
     FileSharing_pb2_grpc.add_FileServiceServicer_to_server(file_service, server)
     server.add_insecure_port('[::]:50003')
     server.start()
-    print("Servidor gRPC en ejecución en el puerto 50051.")
+    print("Servidor gRPC en ejecución en el puerto 50003.")
     try:
         while True:
             time.sleep(86400)  # Mantener el servidor en ejecución

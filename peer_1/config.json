@@ -1,9 +1,10 @@
 {
-    "username":"peer 1",
-    "status":"off",
-    "files":["file1.txt"],
-    "ip":"127.0.0.1",
-    "port":"50001",
-    "folder":"myFiles"
-
+    "username": "peer1",
+    "status": "off",
+    "files": [
+        "file1.txt"
+    ],
+    "ip": "127.0.0.1",
+    "port": "50001",
+    "folder": "myFiles"
 }

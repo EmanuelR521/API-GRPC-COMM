@@ -1,3 +1,4 @@
+from functools import wraps
 from flask import Flask, request, jsonify
 import json 
 
@@ -5,6 +6,25 @@ api = Flask(__name__)
 
 # Base de datos en memoria para almacenar peers y sus archivos
 peers = []
+
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        username = request.headers.get('username')
+        if username not in peers:
+            return jsonify({'message': 'You must be logged in!'}), 401
+        return f(*args, **kwargs)
+    return decorated
+
+@api.route('/verifyLogin', methods=['POST'])
+@login_required
+def verifyLogin():
+    username = request.headers.get('username')
+    if username in peers:
+        response = jsonify({'message':'Access granted!'}),200
+    else:
+        response = jsonify({'message':'You must be logged in'}),401
+    return response
 
 # Endpoint para que un peer haga login
 @api.route('/login', methods=['POST'])
@@ -26,6 +46,7 @@ def login():
 
 # Endpoint para que un peer haga logout
 @api.route('/logout', methods=['POST'])
+@login_required
 def logout():
     data = request.get_json()
     username = data.get('username')
@@ -45,6 +66,7 @@ def logout():
 # Endpoint para que un peer indexe sus archivos
 # AGREGAR CONTROL DE ERRORES EN CASO DE NO SUBIR UN JSON
 @api.route('/index', methods=['POST'])
+@login_required
 def index_files():
     data = request.get_json()
     peer_name = list(data.keys())[0]
@@ -78,6 +100,7 @@ def index_files():
 
 # Endpoint para que un peer busque un archivo
 @api.route('/search', methods=['GET'])
+@login_required
 def search():
     file_name = request.args.get('file')
     
